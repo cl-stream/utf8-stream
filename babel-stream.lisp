@@ -20,19 +20,19 @@
 
 (defclass babel-stream (stream)
   ((underlying-stream :initarg :stream
-		      :accessor stream-underlying-stream
-		      :type stream)
+                      :accessor stream-underlying-stream
+                      :type stream)
    (external-format :initarg :external-format
-		    :initform :utf-8
-		    :accessor stream-external-format
-		    :type symbol)))
+                    :initform :utf-8
+                    :accessor stream-external-format
+                    :type symbol)))
 
 (defmethod initialize-instance :after ((stream babel-stream)
-				       &rest initargs
-				       &key &allow-other-keys)
+                                       &rest initargs
+                                       &key &allow-other-keys)
   (declare (ignore initargs))
   (assert (equal '(unsigned-byte 8)
-		 (stream-element-type (stream-underlying-stream stream)))))
+                 (stream-element-type (stream-underlying-stream stream)))))
 
 (defclass babel-input-stream (babel-stream input-stream)
   ())
