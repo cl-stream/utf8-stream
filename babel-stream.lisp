@@ -34,6 +34,9 @@
   (assert (equal '(unsigned-byte 8)
                  (stream-element-type (stream-underlying-stream stream)))))
 
+(defmethod stream-element-type ((stream babel-stream))
+  'character)
+
 (defclass babel-input-stream (babel-stream input-stream)
   ())
 
