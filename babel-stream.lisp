@@ -80,11 +80,15 @@
   (write (stream-underlying-stream stream) element))
 
 (defmethod write ((stream babel-output-stream) (element character))
-  (let ((seq (babel:string-to-octets (make-string 1 :initial-element element)
-				     :encoding (stream-external-format stream)
-				     :use-bom nil)))
+  (let* ((encoding (stream-external-format stream))
+         (mapping (babel::lookup-mapping babel::*string-vector-mappings*
+                                         encoding))
+         (string (make-string 1 :initial-element element))
+         (bytes (make-array '(8) :element-type '(unsigned-byte 8)))
+         (length (funcall (the function (babel::encoder mapping))
+                          string 0 1 bytes 0)))
     (write-sequence (stream-underlying-stream stream)
-		    seq)))
+                    bytes :end length)))
 
 (defmethod flush ((stream babel-output-stream))
   (flush (stream-underlying-stream stream)))
@@ -94,7 +98,8 @@
                         :stream (fd-stream:fd-input-stream 0))))
   (read-line s))
 
+#+test
 (let ((s (make-instance 'babel-output-stream
-			:stream (fd-stream:fd-output-stream 1))))
-  (write s #\é)
+                        :stream (fd-stream:fd-output-stream 1))))
+  (write-sequence s "Hello, world ! ÉÀÖÛŸ")
   (flush s))
