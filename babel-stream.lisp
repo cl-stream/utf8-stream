@@ -38,7 +38,39 @@
   'character)
 
 (defclass babel-input-stream (babel-stream input-stream)
-  ())
+  ((bytes :initform (make-array '(8) :element-type '(unsigned-byte 8))
+          :reader stream-bytes
+          :type (array (unsigned-byte 8)))
+   (bytes-length :initform 0
+                 :accessor stream-bytes-length
+                 :type fixnum+)))
+
+(defmethod read ((stream babel-input-stream))
+  (let* ((underlying-stream (stream-underlying-stream stream))
+         (bytes (stream-bytes stream))
+         (encoding (stream-external-format stream))
+         (mapping (babel::lookup-mapping babel::*string-vector-mappings*
+                                         encoding)))
+    (loop
+       (multiple-value-bind (element state) (read underlying-stream)
+         (case state
+           ((nil)
+            (setf (aref bytes (stream-bytes-length stream)) element)
+            (incf (stream-bytes-length stream))
+            (handler-case
+                (let ((string (make-string 1)))
+                  (when (= 1 (funcall (the function (babel::decoder mapping))
+                                      bytes 0 (stream-bytes-length stream)
+                                      string 0))
+                    (setf (stream-bytes-length stream) 0)
+                    (return (values (char string 0) nil))))
+              (babel-encodings:end-of-input-in-character ())))
+           ((:eof)
+            (return (values nil :eof)))
+           ((:non-blocking)
+            (return (values nil :non-blocking)))
+           (otherwise
+            (error 'stream-input-error :stream stream)))))))
 
 (defclass babel-output-stream (babel-stream output-stream)
   ())
@@ -56,6 +88,11 @@
 
 (defmethod flush ((stream babel-output-stream))
   (flush (stream-underlying-stream stream)))
+
+#+test
+(let ((s (make-instance 'babel-input-stream
+                        :stream (fd-stream:fd-input-stream 0))))
+  (read-line s))
 
 (let ((s (make-instance 'babel-output-stream
 			:stream (fd-stream:fd-output-stream 1))))
