@@ -72,6 +72,16 @@
            (otherwise
             (error 'stream-input-error :stream stream)))))))
 
+(defun babel-input-stream (stream &optional (external-format :utf-8))
+  (make-instance 'babel-input-stream
+                 :external-format external-format
+                 :stream stream))
+
+#+test
+(let ((s (make-instance 'babel-input-stream
+                        :stream (fd-stream:fd-input-stream 0))))
+  (read-line s))
+
 (defclass babel-output-stream (babel-stream output-stream)
   ())
 
@@ -93,10 +103,10 @@
 (defmethod flush ((stream babel-output-stream))
   (flush (stream-underlying-stream stream)))
 
-#+test
-(let ((s (make-instance 'babel-input-stream
-                        :stream (fd-stream:fd-input-stream 0))))
-  (read-line s))
+(defun babel-output-stream (stream &optional (external-format :utf-8))
+  (make-instance 'babel-output-stream
+                 :external-format external-format
+                 :stream stream))
 
 #+test
 (let ((s (make-instance 'babel-output-stream
