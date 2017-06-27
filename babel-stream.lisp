@@ -113,3 +113,11 @@
                         :stream (fd-stream:fd-output-stream 1))))
   (write-sequence s "Hello, world ! ÉÀÖÛŸ")
   (flush s))
+
+(defclass babel-io-stream (babel-input-stream babel-output-stream)
+  ())
+
+(defun babel-io-stream (stream &optional (external-format :utf-8))
+  (make-instance 'babel-io-stream
+                 :external-format external-format
+                 :stream stream))
