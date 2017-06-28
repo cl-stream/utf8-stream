@@ -103,6 +103,9 @@
 (defmethod flush ((stream babel-output-stream))
   (flush (stream-underlying-stream stream)))
 
+(defmethod stream-flush-output-buffer ((stream babel-output-stream))
+  (stream-flush-output-buffer (stream-underlying-stream stream)))
+
 (defun babel-output-stream (stream &optional (external-format :utf-8))
   (make-instance 'babel-output-stream
                  :external-format external-format
