@@ -45,14 +45,15 @@
                  :accessor stream-bytes-length
                  :type fixnum+)))
 
-(defmethod read ((stream babel-input-stream))
+(defmethod stream-read ((stream babel-input-stream))
   (let* ((underlying-stream (stream-underlying-stream stream))
          (bytes (stream-bytes stream))
          (encoding (stream-external-format stream))
          (mapping (babel::lookup-mapping babel::*string-vector-mappings*
                                          encoding)))
     (loop
-       (multiple-value-bind (element state) (read underlying-stream)
+       (multiple-value-bind (element state) (stream-read
+                                             underlying-stream)
          (case state
            ((nil)
             (setf (aref bytes (stream-bytes-length stream)) element)
@@ -85,11 +86,12 @@
 (defclass babel-output-stream (babel-stream output-stream)
   ())
 
-(defmethod write ((stream babel-output-stream) (element fixnum))
+(defmethod stream-write ((stream babel-output-stream) (element fixnum))
   (assert (typep element '(unsigned-byte 8)))
   (write (stream-underlying-stream stream) element))
 
-(defmethod write ((stream babel-output-stream) (element character))
+(defmethod stream-write ((stream babel-output-stream)
+                         (element character))
   (let* ((encoding (stream-external-format stream))
          (mapping (babel::lookup-mapping babel::*string-vector-mappings*
                                          encoding))
@@ -100,8 +102,8 @@
     (write-sequence (stream-underlying-stream stream)
                     bytes :end length)))
 
-(defmethod flush ((stream babel-output-stream))
-  (flush (stream-underlying-stream stream)))
+(defmethod stream-flush ((stream babel-output-stream))
+  (stream-flush (stream-underlying-stream stream)))
 
 (defmethod stream-flush-output-buffer ((stream babel-output-stream))
   (stream-flush-output-buffer (stream-underlying-stream stream)))
