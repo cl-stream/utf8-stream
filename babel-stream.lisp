@@ -34,6 +34,9 @@
   (assert (equal '(unsigned-byte 8)
                  (stream-element-type (stream-underlying-stream stream)))))
 
+(defmethod stream-close ((stream babel-stream))
+  (stream-close (stream-underlying-stream stream)))
+
 (defmethod stream-element-type ((stream babel-stream))
   'character)
 
@@ -72,57 +75,3 @@
             (return (values nil :non-blocking)))
            (otherwise
             (error 'stream-input-error :stream stream)))))))
-
-(defun babel-input-stream (stream &optional (external-format :utf-8))
-  (make-instance 'babel-input-stream
-                 :external-format external-format
-                 :stream stream))
-
-#+test
-(let ((s (make-instance 'babel-input-stream
-                        :stream (fd-stream:fd-input-stream 0))))
-  (read-line s))
-
-(defclass babel-output-stream (babel-stream output-stream)
-  ())
-
-(defmethod stream-write ((stream babel-output-stream) (element fixnum))
-  (assert (typep element '(unsigned-byte 8)))
-  (write (stream-underlying-stream stream) element))
-
-(defmethod stream-write ((stream babel-output-stream)
-                         (element character))
-  (let* ((encoding (stream-external-format stream))
-         (mapping (babel::lookup-mapping babel::*string-vector-mappings*
-                                         encoding))
-         (string (make-string 1 :initial-element element))
-         (bytes (make-array '(8) :element-type '(unsigned-byte 8)))
-         (length (funcall (the function (babel::encoder mapping))
-                          string 0 1 bytes 0)))
-    (write-sequence (stream-underlying-stream stream)
-                    bytes :end length)))
-
-(defmethod stream-flush ((stream babel-output-stream))
-  (stream-flush (stream-underlying-stream stream)))
-
-(defmethod stream-flush-output-buffer ((stream babel-output-stream))
-  (stream-flush-output-buffer (stream-underlying-stream stream)))
-
-(defun babel-output-stream (stream &optional (external-format :utf-8))
-  (make-instance 'babel-output-stream
-                 :external-format external-format
-                 :stream stream))
-
-#+test
-(let ((s (make-instance 'babel-output-stream
-                        :stream (fd-stream:fd-output-stream 1))))
-  (write-sequence s "Hello, world ! ÉÀÖÛŸ")
-  (flush s))
-
-(defclass babel-io-stream (babel-input-stream babel-output-stream)
-  ())
-
-(defun babel-io-stream (stream &optional (external-format :utf-8))
-  (make-instance 'babel-io-stream
-                 :external-format external-format
-                 :stream stream))

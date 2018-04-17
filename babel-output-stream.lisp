@@ -21,6 +21,15 @@
 (defclass babel-output-stream (babel-stream output-stream)
   ())
 
+(defmethod stream-clear-output ((stream babel-output-stream))
+  (stream-clear-output (stream-underlying-stream stream)))
+
+(defmethod stream-finish-output ((stream babel-output-stream))
+  (stream-finish-output (stream-underlying-stream stream)))
+
+(defmethod stream-flush-output ((stream babel-output-stream))
+  (stream-flush-output-buffer (stream-underlying-stream stream)))
+
 (defmethod stream-write ((stream babel-output-stream) (element fixnum))
   (assert (typep element '(unsigned-byte 8)))
   (write (stream-underlying-stream stream) element))
@@ -34,14 +43,9 @@
          (bytes (make-array '(8) :element-type '(unsigned-byte 8)))
          (length (funcall (the function (babel::encoder mapping))
                           string 0 1 bytes 0)))
-    (write-sequence (stream-underlying-stream stream)
-                    bytes :end length)))
-
-(defmethod stream-flush ((stream babel-output-stream))
-  (stream-flush (stream-underlying-stream stream)))
-
-(defmethod stream-flush-output-buffer ((stream babel-output-stream))
-  (stream-flush-output-buffer (stream-underlying-stream stream)))
+    (write-sequence bytes
+                    :stream (stream-underlying-stream stream)
+                    :end length)))
 
 (defun babel-output-stream (stream &optional (external-format :utf-8))
   (make-instance 'babel-output-stream
