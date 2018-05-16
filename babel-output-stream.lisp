@@ -28,7 +28,7 @@
   (stream-finish-output (stream-underlying-stream stream)))
 
 (defmethod stream-flush-output ((stream babel-output-stream))
-  (stream-flush-output-buffer (stream-underlying-stream stream)))
+  (stream-flush-output (stream-underlying-stream stream)))
 
 (defmethod stream-write ((stream babel-output-stream) (element fixnum))
   (assert (typep element '(unsigned-byte 8)))
