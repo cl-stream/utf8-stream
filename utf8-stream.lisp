@@ -16,15 +16,28 @@
 ;;  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
 
-(in-package :common-lisp-user)
+(in-package :utf8-stream)
 
-(defpackage :utf8-stream
-  (:use
-   :common-lisp
-   :cl-stream)
-  #.(cl-stream:shadowing-import-from)
-  (:export
-   #:utf8-input-stream
-   #:utf8-io-stream
-   #:utf8-output-stream
-   #:utf8-stream))
+(defclass utf8-stream (ub8-stream)
+  ((underlying-stream :initarg :stream
+                      :accessor stream-underlying-stream
+                      :type character-stream)
+   (encoding :initarg :format
+             :initform :utf-8
+             :accessor stream-encoding
+             :type symbol)
+   (mapping)))
+
+(defmethod stream-close ((stream utf8-stream))
+  (stream-close (stream-underlying-stream stream)))
+
+(defmethod stream-open-p ((stream utf8-stream))
+  (stream-open-p (stream-underlying-stream stream)))
+
+(defun mapping (stream)
+  (if (slot-boundp stream 'mapping)
+      (slot-value stream 'mapping)
+      (setf (slot-value stream 'mapping)
+            (let ((encoding (stream-encoding stream)))
+              (babel::lookup-mapping babel::*string-vector-mappings*
+                                     encoding)))))

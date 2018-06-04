@@ -1,5 +1,5 @@
 ;;
-;;  babel-stream  -  charset encoding/decoding layer for cl-stream
+;;  utf8-stream  -  charset encoding/decoding layer for cl-stream
 ;;
 ;;  Copyright 2017,2018 Thomas de Grivel <thoxdg@gmail.com>
 ;;
@@ -16,24 +16,12 @@
 ;;  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
 
-(in-package :common-lisp-user)
+(in-package :utf8-stream)
 
-(defpackage :babel-stream.system
-  (:use :common-lisp :asdf))
+(defclass utf8-io-stream (utf8-input-stream utf8-output-stream)
+  ())
 
-(in-package :babel-stream.system)
-
-(defsystem :babel-stream
-  :name "babel-stream"
-  :author "Thomas de Grivel <thoxdg@gmail.com>"
-  :version "0.1"
-  :description "Charset encoding/decoding layer for cl-stream"
-  :depends-on ("babel"
-	       "cl-stream")
-  :components
-  ((:file "package")
-   (:file "babel-input-stream" :depends-on ("babel-stream"))
-   (:file "babel-io-stream" :depends-on ("babel-input-stream"
-                                         "babel-output-stream"))
-   (:file "babel-output-stream" :depends-on ("babel-stream"))
-   (:file "babel-stream" :depends-on ("package"))))
+(defun utf8-io-stream (stream &optional (format :utf-8))
+  (make-instance 'utf8-io-stream
+                 :external-format format
+                 :stream stream))
