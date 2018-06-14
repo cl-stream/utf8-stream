@@ -18,21 +18,12 @@
 
 (in-package :utf8-stream)
 
-(defclass utf8-stream (ub8-stream)
-  ((underlying-stream :initarg :stream
-                      :accessor stream-underlying-stream
-                      :type character-stream)
-   (encoding :initarg :format
+(defclass utf8-stream (super-stream ub8-stream)
+  ((encoding :initarg :format
              :initform :utf-8
              :accessor stream-encoding
              :type symbol)
    (mapping)))
-
-(defmethod stream-close ((stream utf8-stream))
-  (stream-close (stream-underlying-stream stream)))
-
-(defmethod stream-open-p ((stream utf8-stream))
-  (stream-open-p (stream-underlying-stream stream)))
 
 (defun mapping (stream)
   (if (slot-boundp stream 'mapping)

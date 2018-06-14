@@ -26,21 +26,6 @@
                  :accessor stream-bytes-length
                  :type fixnum+)))
 
-(defmethod stream-clear-output ((stream utf8-output-stream))
-  (stream-clear-output (stream-underlying-stream stream)))
-
-(defmethod stream-finish-output ((stream utf8-output-stream))
-  (stream-finish-output (stream-underlying-stream stream)))
-
-(defmethod stream-flush ((stream utf8-output-stream))
-  (stream-flush (stream-underlying-stream stream)))
-
-(defmethod stream-flush-output ((stream utf8-output-stream))
-  (stream-flush-output (stream-underlying-stream stream)))
-
-(defmethod stream-open-p ((stream utf8-output-stream))
-  (stream-open-p (stream-underlying-stream stream)))
-
 (defmethod stream-write ((stream utf8-output-stream)
                          (element character))
   (stream-write (stream-underlying-stream stream) element))
